@@ -1,0 +1,21 @@
+site_name: ЛР1. Работа с сокетами
+site_description: Отчёт по лабораторной работе №1 по дисциплине «Веб-программирование»
+theme:
+  name: material
+  language: ru
+  features:
+    - content.code.copy
+    - navigation.instant
+markdown_extensions:
+  - admonition
+  - tables
+  - pymdownx.highlight
+  - pymdownx.superfences
+nav:
+  - Главная: index.md
+  - "Задание 1. UDP": task1.md
+  - "Задание 2. TCP-вычисления": task2.md
+  - "Задание 3. HTML по HTTP": task3.md
+  - "Задание 4. Чат": task4.md
+  - "Задание 5. GET/POST": task5.md
+  - Выводы: conclusion.md
