@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Задания{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="m-0">Домашние задания</h2>
+  {% if user.is_staff %}<a href="{% url 'homework_create' %}" class="btn btn-success"><i class="bi bi-plus-lg"></i> Выдать задание</a>{% endif %}
+</div>
+<form class="card card-body mb-4 shadow-sm border-0" method="get">
+  <div class="row g-2">
+    <div class="col-md-3"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Поиск по теме и тексту…"></div>
+    <div class="col-md-2"><select name="subject" class="form-select"><option value="">Все предметы</option>
+      {% for s in subjects %}<option value="{{ s.pk }}" {% if request.GET.subject == s.pk|stringformat:'s' %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+    <div class="col-md-2"><select name="status" class="form-select">
+      <option value="">Любой срок</option>
+      <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Актуальные</option>
+      <option value="overdue" {% if request.GET.status == 'overdue' %}selected{% endif %}>Срок истёк</option></select></div>
+    {% if user.is_staff %}
+    <div class="col-md-2"><select name="group" class="form-select"><option value="">Все группы</option>
+      {% for g in groups %}<option value="{{ g.pk }}" {% if request.GET.group == g.pk|stringformat:'s' %}selected{% endif %}>{{ g }}</option>{% endfor %}</select></div>
+    <div class="col-md-1"><select name="teacher" class="form-select"><option value="">Все</option>
+      <option value="me" {% if request.GET.teacher == 'me' %}selected{% endif %}>Мои</option></select></div>
+    {% else %}
+    <div class="col-md-3"><select name="state" class="form-select">
+      <option value="">Все мои статусы</option>
+      <option value="todo" {% if request.GET.state == 'todo' %}selected{% endif %}>Не сдано</option>
+      <option value="submitted" {% if request.GET.state == 'submitted' %}selected{% endif %}>На проверке</option>
+      <option value="graded" {% if request.GET.state == 'graded' %}selected{% endif %}>Оценено</option></select></div>
+    {% endif %}
+    <div class="col-md-2 d-flex gap-2"><button class="btn btn-primary flex-fill"><i class="bi bi-funnel"></i> Найти</button>
+      <a href="{% url 'homework_list' %}" class="btn btn-outline-secondary" title="Сбросить"><i class="bi bi-x-lg"></i></a></div>
+  </div>
+</form>
+
+<div class="row g-3">
+{% for hw in homeworks %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card hw-card h-100 shadow-sm {% if hw.is_overdue %}overdue{% endif %}">
+      <div class="card-body d-flex flex-column">
+        <div class="d-flex justify-content-between mb-2">
+          <span class="badge bg-primary-subtle text-primary-emphasis">{{ hw.subject }}</span>
+          {% if hw.is_overdue %}<span class="badge bg-danger">срок истёк</span>
+          {% elif hw.days_left <= 2 %}<span class="badge bg-warning text-dark">осталось {{ hw.days_left }} дн.</span>
+          {% else %}<span class="badge bg-success">ещё {{ hw.days_left }} дн.</span>{% endif %}
+        </div>
+        <h5 class="card-title"><a href="{{ hw.get_absolute_url }}" class="stretched-link text-decoration-none text-dark">{{ hw.title }}</a></h5>
+        <p class="card-text text-muted small flex-grow-1">{{ hw.text|truncatewords:22 }}</p>
+        <div class="small text-muted"><i class="bi bi-person-badge"></i> {{ hw.teacher.short_name }}
+          · <i class="bi bi-calendar-event"></i> {{ hw.issue_date|date:"d.m" }} → <b>{{ hw.deadline|date:"d.m.Y" }}</b></div>
+        <div class="small text-muted">Группы: {% for g in hw.groups.all %}{{ g }}{% if not forloop.last %}, {% endif %}{% endfor %} · макс. {{ hw.max_score }} б.</div>
+      </div>
+      <div class="card-footer bg-transparent small">
+        {% if user.is_staff %}
+          <i class="bi bi-inbox"></i> Сдано: {{ hw.sub_count }}
+          {% if hw.ungraded %}<span class="badge bg-info text-dark ms-1">{{ hw.ungraded }} ждут проверки</span>{% endif %}
+        {% else %}
+          {% if hw.my_grade is not None %}<span class="text-success"><i class="bi bi-patch-check-fill"></i> Оценка: <b>{{ hw.my_grade }}/{{ hw.max_score }}</b></span>
+          {% elif hw.submitted %}<span class="text-info"><i class="bi bi-hourglass-split"></i> На проверке</span>
+          {% else %}<span class="text-secondary"><i class="bi bi-circle"></i> Не сдано</span>{% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% empty %}
+  <div class="col-12"><div class="alert alert-light text-center">Заданий не найдено{% if not user.is_staff and not user.group %} — укажите группу в <a href="{% url 'profile' %}">профиле</a>{% endif %}.</div></div>
+{% endfor %}
+</div>
+{% include 'board/_pagination.html' %}
+{% endblock %}

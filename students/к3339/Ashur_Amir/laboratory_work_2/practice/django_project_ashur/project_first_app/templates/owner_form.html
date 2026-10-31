@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Новый владелец</h2>
+<form method="post" class="card card-body" style="max-width:600px">{% csrf_token %}{{ form.as_p }}
+<button class="btn btn-success">Сохранить</button></form>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between"><h2>Автомобили</h2><a class="btn btn-primary" href="{% url 'car_create' %}">+ Добавить автомобиль</a></div>
+<table class="table table-striped bg-white mt-3"><tr><th>Гос. номер</th><th>Марка</th><th>Модель</th><th>Цвет</th><th></th></tr>
+{% for car in cars %}<tr><td><a href="{% url 'car_detail' car.pk %}">{{ car.state_number }}</a></td><td>{{ car.brand }}</td><td>{{ car.model_name }}</td><td>{{ car.color|default:"—" }}</td>
+<td><a class="btn btn-sm btn-outline-secondary" href="{% url 'car_update' car.pk %}">Изменить</a> <a class="btn btn-sm btn-outline-danger" href="{% url 'car_delete' car.pk %}">Удалить</a></td></tr>
+{% empty %}<tr><td colspan="5">Автомобилей нет</td></tr>{% endfor %}</table>
+{% endblock %}

@@ -1,0 +1,31 @@
+site_name: Лабораторная работа №2 — Ашур Амир
+site_description: Простой сайт на Django. Вариант 2 — доска домашних заданий
+docs_dir: docs
+theme:
+  name: material
+  language: ru
+  palette:
+    primary: indigo
+  features:
+    - navigation.sections
+    - content.code.copy
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+nav:
+  - Главная: index.md
+  - Практические работы:
+      - 2.1 Установка и первое приложение: practice_2_1.md
+      - 2.2 M2M, представления, формы: practice_2_2.md
+      - 2.3 Расширение пользователя: practice_2_3.md
+  - Лабораторная работа:
+      - Задание и модель данных: lab_model.md
+      - Интерфейсы: lab_interfaces.md
+      - Запуск: lab_run.md

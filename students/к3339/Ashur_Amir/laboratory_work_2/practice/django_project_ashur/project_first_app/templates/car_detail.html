@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ car.brand }} {{ car.model_name }}</h2>
+<p>Гос. номер: <b>{{ car.state_number }}</b>, цвет: {{ car.color|default:"—" }}</p>
+<h4>История владения</h4>
+<table class="table table-sm bg-white"><tr><th>Владелец</th><th>С</th><th>По</th></tr>
+{% for o in car.ownerships.all %}<tr><td><a href="{% url 'owner_detail' o.owner.pk %}">{{ o.owner }}</a></td><td>{{ o.start_date }}</td><td>{{ o.end_date|default:"по н.в." }}</td></tr>{% endfor %}</table>
+<a class="btn btn-outline-secondary" href="{% url 'car_update' car.pk %}">Изменить</a>
+<a class="btn btn-outline-danger" href="{% url 'car_delete' car.pk %}">Удалить</a>
+{% endblock %}

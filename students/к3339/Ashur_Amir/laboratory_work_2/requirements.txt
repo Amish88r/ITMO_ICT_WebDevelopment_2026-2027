@@ -1,0 +1,4 @@
+Django>=5.2,<6
+psycopg2-binary>=2.9
+mkdocs>=1.6
+mkdocs-material>=9.5

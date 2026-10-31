@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load board_extras %}
+{% block title %}Журнал{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <h2 class="m-0">Журнал оценок {% if group %}<span class="badge bg-primary">{{ group }}</span>{% endif %}</h2>
+  <form class="d-flex gap-2" method="get">
+    {% if user.is_staff %}<select name="group" class="form-select" onchange="this.form.submit()">
+      {% for g in groups %}<option value="{{ g.pk }}" {% if g == group %}selected{% endif %}>{{ g }}</option>{% endfor %}</select>{% endif %}
+    <select name="subject" class="form-select" onchange="this.form.submit()"><option value="">Все предметы</option>
+      {% for s in subjects %}<option value="{{ s.pk }}" {% if s == subject %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+    <input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Фамилия">
+    <button class="btn btn-primary"><i class="bi bi-search"></i></button>
+  </form>
+</div>
+{% if not group %}<div class="alert alert-warning">Укажите группу в <a href="{% url 'profile' %}">профиле</a>.</div>{% else %}
+<div class="card shadow-sm border-0"><div class="table-responsive">
+<table class="table table-bordered table-sm align-middle text-center mb-0 table-journal">
+  <thead class="table-light"><tr><th class="text-start align-bottom">Студент</th>
+    {% for hw in homeworks %}<th class="rot" title="{{ hw }}"><a href="{{ hw.get_absolute_url }}" class="text-decoration-none">{{ hw.subject.name|truncatechars:12 }}: {{ hw.title|truncatechars:22 }}</a></th>{% endfor %}
+    <th class="align-bottom">Сумма</th><th class="align-bottom">%</th></tr></thead>
+  <tbody>
+  {% for row in page_obj %}
+    <tr class="{% if row.is_me %}me-row{% endif %}"><td class="text-start text-nowrap">{{ row.student.short_name }}{% if row.is_me %} <span class="badge bg-warning text-dark">я</span>{% endif %}</td>
+    {% for c in row.cells %}<td class="grade-cell">{% if c %}{% if c.grade is not None %}<span class="badge bg-{{ c|grade_color }}" title="{{ c.teacher_comment }}">{{ c.grade }}</span>{% else %}<i class="bi bi-hourglass-split text-info" title="на проверке"></i>{% endif %}{% else %}<span class="text-muted">—</span>{% endif %}</td>{% endfor %}
+    <td><b>{{ row.total }}</b></td><td><div class="progress" style="height:18px;min-width:60px"><div class="progress-bar" style="width:{{ row.percent }}%">{{ row.percent }}%</div></div></td></tr>
+  {% empty %}<tr><td colspan="99" class="text-muted py-4">Нет студентов</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+<p class="small text-muted mt-2"><span class="badge bg-success">≥85%</span> <span class="badge bg-primary">≥70%</span> <span class="badge bg-warning">≥50%</span> <span class="badge bg-danger">&lt;50%</span> · <i class="bi bi-hourglass-split text-info"></i> на проверке · — не сдано</p>
+{% include 'board/_pagination.html' %}
+{% endif %}
+{% endblock %}

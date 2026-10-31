@@ -1,0 +1,61 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Доска ДЗ{% endblock %} · HomeworkBoard</title>
+  <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendor/icons/bootstrap-icons.min.css' %}" rel="stylesheet">
+  <style>
+    body{background:#f4f6fb}
+    .navbar-brand{font-weight:700;letter-spacing:.3px}
+    .hw-card{transition:transform .15s, box-shadow .15s;border:0;border-left:4px solid var(--bs-primary)}
+    .hw-card:hover{transform:translateY(-2px);box-shadow:0 .5rem 1rem rgba(0,0,0,.08)}
+    .hw-card.overdue{border-left-color:var(--bs-danger)}
+    .grade-cell{min-width:52px}
+    .table-journal th.rot{writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;font-weight:500;font-size:.8rem}
+    .me-row{outline:2px solid var(--bs-warning)}
+    .card{border-radius:.75rem}
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg {% if user.is_staff %}navbar-dark bg-dark{% else %}navbar-dark bg-primary{% endif %} mb-4 shadow-sm">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'homework_list' %}"><i class="bi bi-journal-check"></i> HomeworkBoard</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="nav">
+      {% if user.is_authenticated %}
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="{% url 'homework_list' %}"><i class="bi bi-list-task"></i> Задания</a></li>
+        {% if user.is_staff %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'homework_create' %}"><i class="bi bi-plus-circle"></i> Выдать ДЗ</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'review' %}"><i class="bi bi-check2-square"></i> Проверка</a></li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'my_submissions' %}"><i class="bi bi-send"></i> Мои сдачи</a></li>
+        {% endif %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'grades_table' %}"><i class="bi bi-table"></i> Журнал</a></li>
+        {% if user.is_staff %}<li class="nav-item"><a class="nav-link text-warning" href="{% url 'admin:index' %}"><i class="bi bi-gear"></i> Админка</a></li>{% endif %}
+      </ul>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge {% if user.is_staff %}bg-warning text-dark{% else %}bg-light text-primary{% endif %}">{% if user.is_staff %}Преподаватель{% else %}Студент{% if user.group %} · {{ user.group }}{% endif %}{% endif %}</span>
+        <a class="btn btn-sm btn-outline-light" href="{% url 'profile' %}"><i class="bi bi-person"></i> {{ user.short_name }}</a>
+        <form method="post" action="{% url 'logout' %}" class="m-0">{% csrf_token %}<button class="btn btn-sm btn-light"><i class="bi bi-box-arrow-right"></i></button></form>
+      </div>
+      {% else %}
+      <div class="ms-auto d-flex gap-2">
+        <a class="btn btn-sm btn-light" href="{% url 'login' %}">Войти</a>
+        <a class="btn btn-sm btn-outline-light" href="{% url 'signup' %}">Регистрация</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+<main class="container pb-5">
+  {% for m in messages %}
+    <div class="alert alert-{% if m.tags == 'error' %}danger{% else %}{{ m.tags }}{% endif %} alert-dismissible fade show">{{ m }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</main>
+<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

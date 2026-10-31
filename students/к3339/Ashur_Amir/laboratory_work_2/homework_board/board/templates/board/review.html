@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Проверка работ</h2>
+<ul class="nav nav-pills my-3">
+  <li class="nav-item"><a class="nav-link {% if state == 'ungraded' %}active{% endif %}" href="{% querystring state='ungraded' page=None %}">Ждут проверки</a></li>
+  <li class="nav-item"><a class="nav-link {% if state == 'graded' %}active{% endif %}" href="{% querystring state='graded' page=None %}">Проверенные</a></li>
+  <li class="nav-item"><a class="nav-link {% if state == 'all' %}active{% endif %}" href="{% querystring state='all' page=None %}">Все</a></li>
+</ul>
+<form class="row g-2 mb-3" method="get"><input type="hidden" name="state" value="{{ state }}">
+  <div class="col-md-3"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Фамилия или тема…"></div>
+  <div class="col-md-3"><select name="group" class="form-select"><option value="">Все группы</option>
+    {% for g in groups %}<option value="{{ g.pk }}" {% if request.GET.group == g.pk|stringformat:'s' %}selected{% endif %}>{{ g }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><select name="subject" class="form-select"><option value="">Все предметы</option>
+    {% for s in subjects %}<option value="{{ s.pk }}" {% if request.GET.subject == s.pk|stringformat:'s' %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><button class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Фильтр</button></div>
+</form>
+{% for s, form in rows %}
+<div class="card shadow-sm border-0 mb-3"><div class="card-body">
+  <div class="d-flex justify-content-between flex-wrap">
+    <div><b>{{ s.student.full_name }}</b> <span class="text-muted">· {{ s.student.group }}</span><br>
+      <a href="{{ s.homework.get_absolute_url }}" class="small">{{ s.homework.subject }}: {{ s.homework.title }}</a></div>
+    <div class="small text-muted text-end">сдано {{ s.submitted_at|date:"d.m.Y H:i" }}<br>срок {{ s.homework.deadline|date:"d.m.Y" }}
+      {% if s.days_late %}<span class="badge bg-danger">просрочка {{ s.days_late }} дн.</span>{% endif %}</div>
+  </div>
+  <div class="my-2 p-2 bg-light rounded small" style="white-space:pre-line">{{ s.text|truncatewords:60 }}</div>
+  <form method="post" action="{% url 'grade_submission' s.pk %}" class="row g-2 align-items-end">{% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <div class="col-md-2"><label class="form-label small mb-0">Оценка / {{ s.homework.max_score }} (рек. {{ s.suggested_grade }})</label>{{ form.grade }}</div>
+    <div class="col-md-8"><label class="form-label small mb-0">Комментарий</label>{{ form.teacher_comment }}</div>
+    <div class="col-md-2"><button class="btn btn-success w-100">Сохранить</button></div>
+  </form>
+</div></div>
+{% empty %}<div class="alert alert-light text-center">Работ нет 🎉</div>{% endfor %}
+{% include 'board/_pagination.html' %}
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}{{ hw.title }}{% endblock %}
+{% block content %}
+<nav class="mb-2"><a href="{% url 'homework_list' %}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Все задания</a></nav>
+<div class="row g-4">
+  <div class="col-lg-{% if user.is_staff %}12{% else %}7{% endif %}">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <div class="d-flex justify-content-between flex-wrap gap-2">
+          <div><span class="badge bg-primary">{{ hw.subject }}</span>
+            <h2 class="mt-2">{{ hw.title }}</h2></div>
+          {% if user.is_staff %}<div>
+            <a href="{% url 'homework_update' hw.pk %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Редактировать</a>
+            <a href="{% url 'homework_delete' hw.pk %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i> Удалить</a>
+            <a href="{% url 'admin:board_homework_change' hw.pk %}" class="btn btn-outline-warning btn-sm"><i class="bi bi-gear"></i> В админке</a></div>{% endif %}
+        </div>
+        <dl class="row small mb-3">
+          <dt class="col-sm-4">Преподаватель</dt><dd class="col-sm-8">{{ hw.teacher.full_name }}</dd>
+          <dt class="col-sm-4">Дата выдачи</dt><dd class="col-sm-8">{{ hw.issue_date|date:"d.m.Y" }}</dd>
+          <dt class="col-sm-4">Период выполнения</dt><dd class="col-sm-8">{{ hw.period_days }} дн. — до <b>{{ hw.deadline|date:"d.m.Y" }}</b>
+            {% if hw.is_overdue %}<span class="badge bg-danger">срок истёк</span>{% else %}<span class="badge bg-success">осталось {{ hw.days_left }} дн.</span>{% endif %}</dd>
+          <dt class="col-sm-4">Максимальный балл</dt><dd class="col-sm-8">{{ hw.max_score }}</dd>
+          <dt class="col-sm-4">Группы</dt><dd class="col-sm-8">{% for g in hw.groups.all %}{{ g }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd>
+        </dl>
+        <h5>Задание</h5>
+        <div class="p-3 bg-light rounded mb-3" style="white-space:pre-line">{{ hw.text }}</div>
+        {% if hw.penalty_info or hw.penalty_per_day %}
+        <div class="alert alert-warning small mb-0"><i class="bi bi-exclamation-triangle"></i> <b>Штрафы:</b>
+          {% if hw.penalty_per_day %}−{{ hw.penalty_per_day }} б. за каждый день просрочки. {% endif %}{{ hw.penalty_info }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if user.is_staff %}
+  <div class="col-12">
+    <div class="card shadow-sm border-0"><div class="card-body">
+      <h4>Сданные работы <span class="badge bg-secondary">{{ submissions|length }}</span></h4>
+      {% for s, form in submissions %}
+        <div class="border rounded p-3 mb-3 {% if not s.is_graded %}border-info{% endif %}">
+          <div class="d-flex justify-content-between flex-wrap">
+            <b>{{ s.student.full_name }} <span class="text-muted fw-normal">({{ s.student.group }})</span></b>
+            <span class="small text-muted">сдано {{ s.submitted_at|date:"d.m.Y H:i" }}
+              {% if s.days_late %}<span class="badge bg-danger">просрочка {{ s.days_late }} дн.</span>{% endif %}</span>
+          </div>
+          <div class="my-2 small" style="white-space:pre-line">{{ s.text }}</div>
+          <form method="post" action="{% url 'grade_submission' s.pk %}" class="row g-2 align-items-end">{% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <div class="col-md-2"><label class="form-label small mb-0">Оценка (рек. {{ s.suggested_grade }})</label>{{ form.grade }}</div>
+            <div class="col-md-8"><label class="form-label small mb-0">Комментарий</label>{{ form.teacher_comment }}</div>
+            <div class="col-md-2"><button class="btn btn-success w-100"><i class="bi bi-check-lg"></i> Сохранить</button></div>
+          </form>
+        </div>
+      {% empty %}<p class="text-muted">Пока никто не сдал.</p>{% endfor %}
+      {% if not_submitted %}<p class="small text-muted mb-0"><b>Не сдали:</b> {% for st in not_submitted %}{{ st.short_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+    </div></div>
+  </div>
+  {% else %}
+  <div class="col-lg-5">
+    <div class="card shadow-sm border-0"><div class="card-body">
+      <h4>Моя работа</h4>
+      {% if submission %}
+        <p class="small text-muted mb-2">Сдано {{ submission.submitted_at|date:"d.m.Y H:i" }}{% if submission.updated_at|date:"U" != submission.submitted_at|date:"U" %}, изменено {{ submission.updated_at|date:"d.m.Y H:i" }}{% endif %}
+          {% if submission.days_late %}<span class="badge bg-danger">просрочка {{ submission.days_late }} дн.</span>{% endif %}</p>
+        {% if submission.is_graded %}
+          <div class="alert alert-success"><div class="fs-4 fw-bold">{{ submission.grade }} / {{ hw.max_score }}</div>
+            {% if submission.teacher_comment %}<div class="small">«{{ submission.teacher_comment }}»</div>{% endif %}
+            <div class="small text-muted">проверено {{ submission.graded_at|date:"d.m.Y" }}</div></div>
+          <div class="p-2 bg-light rounded small" style="white-space:pre-line">{{ submission.text }}</div>
+        {% else %}<div class="alert alert-info py-2 small"><i class="bi bi-hourglass-split"></i> Ожидает проверки — ответ ещё можно изменить или отменить.</div>{% endif %}
+      {% elif hw.is_overdue %}
+        <div class="alert alert-danger py-2 small">Срок истёк. Сдать можно, но будет начислен штраф.</div>
+      {% endif %}
+      {% if can_edit %}
+      <form method="post">{% csrf_token %}
+        {{ form.text }}{% for e in form.text.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        <div class="d-flex gap-2 mt-2">
+          <button class="btn btn-primary flex-fill"><i class="bi bi-send"></i> {% if submission %}Сохранить изменения{% else %}Сдать задание{% endif %}</button>
+          {% if submission %}<a href="{% url 'submission_delete' submission.pk %}" class="btn btn-outline-danger"><i class="bi bi-x-circle"></i> Отменить</a>{% endif %}
+        </div>
+      </form>
+      {% endif %}
+    </div></div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% if page_obj.has_other_pages %}
+<nav class="mt-4"><ul class="pagination justify-content-center">
+  <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+    <a class="page-link" href="{% if page_obj.has_previous %}{% querystring page=1 %}{% endif %}">&laquo;</a></li>
+  <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+    <a class="page-link" href="{% if page_obj.has_previous %}{% querystring page=page_obj.previous_page_number %}{% endif %}">&lsaquo;</a></li>
+  {% for n in page_obj.paginator.page_range %}
+    {% if n == page_obj.number %}<li class="page-item active"><span class="page-link">{{ n }}</span></li>
+    {% elif n > page_obj.number|add:'-3' and n < page_obj.number|add:'3' %}<li class="page-item"><a class="page-link" href="{% querystring page=n %}">{{ n }}</a></li>{% endif %}
+  {% endfor %}
+  <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+    <a class="page-link" href="{% if page_obj.has_next %}{% querystring page=page_obj.next_page_number %}{% endif %}">&rsaquo;</a></li>
+  <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+    <a class="page-link" href="{% if page_obj.has_next %}{% querystring page=page_obj.paginator.num_pages %}{% endif %}">&raquo;</a></li>
+</ul>
+<p class="text-center text-muted small">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }} · всего {{ page_obj.paginator.count }}</p></nav>
+{% endif %}

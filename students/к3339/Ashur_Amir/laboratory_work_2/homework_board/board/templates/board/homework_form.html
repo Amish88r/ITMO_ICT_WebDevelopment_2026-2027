@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card shadow-sm border-0 mx-auto" style="max-width:800px"><div class="card-body">
+<h3>{% if object %}Редактирование задания{% else %}Новое домашнее задание{% endif %}</h3>
+<form method="post">{% csrf_token %}
+  {{ form.non_field_errors }}
+  {% for f in form %}
+    <div class="mb-3"><label class="form-label fw-semibold">{{ f.label }}</label>
+      {% if f.name == 'groups' %}<div class="d-flex flex-wrap gap-3">{% for c in f %}<div class="form-check">{{ c.tag }} <label class="form-check-label" for="{{ c.id_for_label }}">{{ c.choice_label }}</label></div>{% endfor %}</div>
+      {% else %}{{ f }}{% endif %}
+      {% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}
+      {% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+  {% endfor %}
+  <button class="btn btn-success"><i class="bi bi-check-lg"></i> Сохранить</button>
+  <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'homework_list' %}{% endif %}" class="btn btn-outline-secondary">Отмена</a>
+</form></div></div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ owner.last_name }} {{ owner.first_name }}</h2>
+<ul class="list-group mb-3">
+ <li class="list-group-item">Логин: {{ owner.username }}</li>
+ <li class="list-group-item">Дата рождения: {{ owner.birth_date|default:"—" }}</li>
+ <li class="list-group-item">Номер паспорта: {{ owner.passport_number|default:"—" }}</li>
+ <li class="list-group-item">Домашний адрес: {{ owner.home_address|default:"—" }}</li>
+ <li class="list-group-item">Национальность: {{ owner.nationality|default:"—" }}</li>
+</ul>
+<h4>Автомобили</h4>
+<table class="table table-sm bg-white"><tr><th>Автомобиль</th><th>С</th><th>По</th></tr>
+{% for o in owner.ownerships.all %}<tr><td><a href="{% url 'car_detail' o.car.pk %}">{{ o.car }}</a></td><td>{{ o.start_date }}</td><td>{{ o.end_date|default:"по н.в." }}</td></tr>
+{% empty %}<tr><td colspan="3">Нет автомобилей</td></tr>{% endfor %}</table>
+<h4>Водительские удостоверения</h4>
+<ul>{% for l in owner.licenses.all %}<li>{{ l.number }} — {{ l.get_type_display }}, выдано {{ l.issue_date }}</li>{% empty %}<li>Нет</li>{% endfor %}</ul>
+{% endblock %}

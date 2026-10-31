@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between"><h2>Владельцы</h2><a class="btn btn-primary" href="{% url 'owner_create' %}">+ Добавить владельца</a></div>
+<table class="table table-striped bg-white mt-3"><tr><th>ФИО</th><th>Паспорт</th><th>Адрес</th><th>Национальность</th><th>Автомобили</th></tr>
+{% for o in owners %}<tr><td><a href="{% url 'owner_detail' o.pk %}">{{ o }}</a></td><td>{{ o.passport_number }}</td><td>{{ o.home_address }}</td><td>{{ o.nationality }}</td>
+<td>{% for own in o.ownerships.all %}{{ own.car }}{% if not forloop.last %}, {% endif %}{% endfor %}</td></tr>
+{% empty %}<tr><td colspan="5">Владельцев нет</td></tr>{% endfor %}</table>
+{% endblock %}

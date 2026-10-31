@@ -1,0 +1,11 @@
+{% load static %}
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>{% block title %}Автовладельцы{% endblock %}</title>
+<link href="{% static "bootstrap.min.css" %}" rel="stylesheet"></head>
+<body class="bg-light">
+<nav class="navbar navbar-dark bg-dark mb-4"><div class="container">
+ <a class="navbar-brand" href="{% url 'owner_list' %}">Автовладельцы</a>
+ <div><a class="btn btn-sm btn-outline-light" href="{% url 'owner_list' %}">Владельцы</a>
+ <a class="btn btn-sm btn-outline-light" href="{% url 'car_list' %}">Автомобили</a>
+ <a class="btn btn-sm btn-outline-warning" href="/admin/">Админка</a></div></div></nav>
+<main class="container">{% block content %}{% endblock %}</main></body></html>

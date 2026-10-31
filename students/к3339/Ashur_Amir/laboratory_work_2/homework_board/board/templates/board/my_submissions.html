@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Мои сданные работы</h2>
+<form class="row g-2 my-3" method="get">
+  <div class="col-md-4"><select name="subject" class="form-select"><option value="">Все предметы</option>
+    {% for s in subjects %}<option value="{{ s.pk }}" {% if request.GET.subject == s.pk|stringformat:'s' %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><select name="graded" class="form-select"><option value="">Все</option>
+    <option value="1" {% if request.GET.graded == '1' %}selected{% endif %}>Оценённые</option>
+    <option value="0" {% if request.GET.graded == '0' %}selected{% endif %}>На проверке</option></select></div>
+  <div class="col-md-2"><button class="btn btn-primary w-100">Показать</button></div>
+</form>
+<div class="card shadow-sm border-0"><table class="table table-hover align-middle mb-0">
+<thead class="table-light"><tr><th>Предмет</th><th>Задание</th><th>Сдано</th><th>Срок</th><th>Оценка</th><th></th></tr></thead><tbody>
+{% for s in page_obj %}<tr>
+  <td>{{ s.homework.subject }}</td><td><a href="{{ s.homework.get_absolute_url }}">{{ s.homework.title }}</a></td>
+  <td>{{ s.submitted_at|date:"d.m.Y H:i" }}{% if s.days_late %} <span class="badge bg-danger">+{{ s.days_late }} дн.</span>{% endif %}</td>
+  <td>{{ s.homework.deadline|date:"d.m.Y" }}</td>
+  <td>{% if s.is_graded %}<b>{{ s.grade }}</b>/{{ s.homework.max_score }}{% else %}<span class="badge bg-info text-dark">на проверке</span>{% endif %}</td>
+  <td class="text-end">{% if not s.is_graded %}<a href="{{ s.homework.get_absolute_url }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+    <a href="{% url 'submission_delete' s.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></a>{% endif %}</td>
+</tr>{% empty %}<tr><td colspan="6" class="text-center text-muted py-4">Нет сданных работ</td></tr>{% endfor %}
+</tbody></table></div>
+{% include 'board/_pagination.html' %}
+{% endblock %}

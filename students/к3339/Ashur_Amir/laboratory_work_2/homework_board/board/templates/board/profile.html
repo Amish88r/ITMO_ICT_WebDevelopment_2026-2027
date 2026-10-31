@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-md-4"><div class="card shadow-sm border-0 text-center"><div class="card-body">
+    <i class="bi bi-person-circle fs-1 text-primary"></i><h4>{{ user.full_name }}</h4>
+    <p class="text-muted">@{{ user.username }} · {% if user.is_staff %}преподаватель{% else %}студент {{ user.group|default:"" }}{% endif %}</p>
+    {% if not user.is_staff %}<div class="row"><div class="col"><div class="fs-4 fw-bold">{{ stats.total }}</div><small>сдано</small></div>
+      <div class="col"><div class="fs-4 fw-bold">{{ stats.graded }}</div><small>оценено</small></div>
+      <div class="col"><div class="fs-4 fw-bold">{{ stats.avg|floatformat:1|default:"—" }}</div><small>ср. балл</small></div></div>{% endif %}
+  </div></div></div>
+  <div class="col-md-8"><div class="card shadow-sm border-0"><div class="card-body"><h4>Редактировать профиль</h4>
+    <form method="post">{% csrf_token %}{% for f in form %}<div class="mb-2"><label class="form-label">{{ f.label }}</label>{{ f }}{% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}{% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>{% endfor %}
+    <button class="btn btn-primary">Сохранить</button></form></div></div></div>
+</div>
+{% endblock %}
